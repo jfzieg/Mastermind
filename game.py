@@ -72,6 +72,13 @@ class Game:
     
     We may want to add test codes
     """
+    
+    def validate(self, input):
+        """
+        Validate either the code or the guess from the user's input.
+        It should be a four-digit integer seperated by space.
+        :return: a list of each digit as a string (i.e ["1","2","3","4"])
+        """
 
 class UI:
     """
@@ -81,28 +88,96 @@ class UI:
         """
         Initializes a class instance for use by the Game class.
         """
-
+        self.game_mode = None               # "user guess" or "computer guess"
+        self.user_generated_code = None     # in "computer guess" mode, the user creates the code
+        self.user_guess = None              # in "user guess" mode, the user guesses the code
+        self.code = None
+        self.game = Game()
+        
     def start_menu(self):
         """
         Display start menu text for user, prompt for input on game mode (computer or player),
         and max number of guesses.
         :return: the game mode as a string, and max number of guesses as an int.
         """
-        game_mode = "user"  # input computer if the computer is the code-guesser, user if the user is the code-guesser
+        welcome_message = "Welcome to MasterMind"
+        introduction = "Introduction to this game (to be added)"
+        print(welcome_message)
+        print(introduction)
+        
+        game_mode = self.ask_user_for_game_mode()
+        
+        game_start_message = "You choose {} game mode! Game start!".format(game_mode)
+        
         num_guesses = 8  # input the number of attempts allowed to guess the code
 
         return game_mode, num_guesses
+    
+    def ask_user_for_game_mode(self):
+        """
+        To initiating the game, ask the user for the game mode
+        :return: nothing
+        """
+        while self.game_mode == None: 
+            
+            game_mode = input("Enter '1' for 'User Guess' mode, enter '2' for 'Computer Guess' mode: ") 
+            
+            if game_mode == "1":
+                self.game_mode == "user_guess"
 
+            elif game_mode == "2":
+                self.game_mode == "computer_guess"
+
+            else:
+                print("Invalid input.")
+        
     def guess_menu(self):
         """
+        in the "user guess" mode,
         Display in-game options for user or the next code guess,
         including hint or quit options, and prompt for user's input.
 
         Input should check for correct exit/hint statements and valid guesses.
 
-        :return: Return the user's input of either a code, or quit/hint option
+        :return: nothing
         """
-
+        if self.game_mode == "user_guess":
+            
+            input_instruction = "Enter your guess as a four-digit number seperated by space (i.e. 2 2 2 2)." + 
+                                "Or enter 'hint' for a hint." + 
+                                "Or enter 'quit' to quit."
+            print(input_instruction)
+            instruction = input("Your input: ")
+  
+            if instruction == "hint":
+                self.hint()
+            
+            elif instruction == "quit":
+                self.end_menu()
+                   
+            else:
+                guess = self.game.validate(instruction)
+                self.user_guess = guess
+   
+    def hint(self):
+        """
+        In the "user guess" mode, the user can ask for a hint, then move to the next step (guess/hint/quit)
+        :return: nothing
+        """
+        if self.game_mode == "user_guess":
+            hint = self.game.generate_hint()
+            print("The hint is {}.".format(hint))
+            self.guess_menu()                       # ask for input again. Not sure if it works tho.....
+        
+    def user_generates_code(self):
+        """
+        In the "computer_guess" mode, ask the user to input the code and validate the code
+        :return: nothing
+        """
+        if self.game_mode == "computer_guess":
+            code = input("Enter the code as a four-digit number seperated by space (i.e. 2 2 2 2):")
+            self.code = self.game.validate(code)
+            
     def feedback(self, num_correct_pos, num_correct):
         """
         Display computer feedback on user's code guess
@@ -111,9 +186,31 @@ class UI:
 
     def end_menu(self):
         """
+        1. if the user chooses to quit the current game
+        2. if the user gets the code
+        3. if computer gets the code
+       
+        End the game
         Display Win/Loss and gameplay statistics
+        Ask the user if he/she wants to start a new game
         :return: nothing
         """
-
+        self.game_mode == None
+        
+        # display statistics
+        
+        start_a_new_game = input("Do you want to start a new game? Enter 'yes' to start or others to quit.")
+        if start_a_new_game == 'yes':
+            self.initialize_new_game()
+        else:
+            print("Hope you had fun playing MasterMind. Bye.") # end completely
+    
+    def initialize_new_game(self):
+        """
+        Restart the game if the user chooses to start a new game
+        :return: nothing
+        """
+        self.__init__()
+        self.start_menu()
 
 game = Game()  # Creates a game instance, and starts play
