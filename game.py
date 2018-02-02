@@ -3,7 +3,7 @@ from random import randrange
 class Game:
     """
     An implementation of the code-guessing game, Mastermind. The object of the game is to guess a 4-digit
-    code, with each digit in the range [1,4], within a specified amount of tries.
+    code, with each digit in the range [1,6], within a specified amount of tries.
     This game is played by a user against the computer.
     """
 
@@ -18,6 +18,7 @@ class Game:
         self.game_mode = "user"
         self.num_guesses = 8
         self.guess = None
+
 
         self.UI = UI()  # Initializes UI iterface
         self.game_loop()  # Starts game
@@ -100,7 +101,7 @@ class Game:
         """
         code = None
         for i in range(4):
-            code += randrange(1, 4)
+            code += randrange(1, 6)
 
         return code
 
@@ -145,6 +146,10 @@ class Game:
     
     We may want to add test codes
     """
+    def save_stats(self, result):
+        outfile = open("stats.txt", 'r')
+        if result == "win":
+
 
 class UI:
     """
