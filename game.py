@@ -1,4 +1,3 @@
-
 from random import randrange
 
 class Game:
@@ -9,24 +8,20 @@ class Game:
     """
 
     def __init__(self):
-
         """
-        Setup for game start, initializes class variable for correct code, and starts game_loop
-
-        :param code: The correct code to be guessed by either the user or the computer. Must be a 4-digit int with each
-        digit in the range [1,4] inclusive
-        :param num_hints: The number of hints the user has asked for.
-        :param computer_guess: The variable to be used if the computer is guessing the code.
+        Setup for game start, initializes class variable for correct code, num_hints, the game_mode,
+        num_guesses, a holder for the user's guess, and starts game_loop
         """
 
         self.code = -1
         self.num_hints = 0
-        self.computer_guess = -1
         self.game_mode = "user"
         self.num_guesses = 8
+        self.guess = None
 
-        self.game_loop()
-        self.UI = UI()
+        self.UI = UI()  # Initializes UI iterface
+        self.game_loop()  # Starts game
+
 
     def game_loop(self):
         """
@@ -34,49 +29,46 @@ class Game:
 
         :return: nothing
         """
-
-        # What is this doing that code_analysis isn't covering?
-        random_number == randrange(1,4)
-        print random_number()
-        count = 0
-        while count < 4:
-            if self.guess == random_number():
-                print("Your win")
-        else:
-
-            print ("You lose")
-
-        self.UI.start_menu()  # Display start menu to player and get player input on game mode and number of guesses
-        self.game_mode, self.num_guesses = self.UI.start_menu()
-
         input = ""
 
         while input != "quit":
-            input = self.play_game()
-
-        self.UI.end_menu()
+            self.game_mode, self.num_guesses = self.UI.start_menu()  # Get user input on game mode and max number of guesses.
+            result = self.play_game()  # Play game!
+            input = self.UI.end_menu(result)
 
     def play_game(self):
         i=0
 
         while i <= self.num_guesses:
+            # User Guesses
             if self.game_mode == "user_guess":
                 input = self.UI.guess_menu()  # Get input from user to determine which operation to perform
                 if input == "hint":
-                    self.UI.hint(self.generate_hint())
+                    self.UI.hint(self.generate_hint(self.guess))  # Gives a hint using the user's most recent guess
+
                 elif input == "quit":
-                    return "quit"
+                    return "lose"  # end while loop, and take user to end_menu()
+
                 else:  # if the user guesses a code, return feedback to the user on correctness
-                    correct_pos, correct_num = self.code_analysis(input)
-                    self.UI.feedback(correct_pos, correct_num)
+                    self.guess = input
+                    correct_pos, correct_num = self.code_analysis(self.guess)
+                    if correct_pos == len(self.code):
+                        return "win" # end while loop, and take user to end_menu()
+                    else:
+                        self.UI.feedback(correct_pos, correct_num)
                     i += 1
 
+            # Computer Guesses
             elif self.game_mode == "computer_guess":
                 guess = self.generate_guess()
                 correct_pos, correct_num = self.code_analysis(guess)
-                self.UI.feedback(correct_pos, correct_num)
+                if correct_pos == len(self.code):
+                    return "win"  # end while loop, and take user to end_menu()
+                else:
+                    self.UI.feedback(correct_pos, correct_num)
                 i += 1
-        # Not finished yet
+        return "lose"  # end while loop, and take user to end_menu()
+
 
     def code_analysis(self, guess):
         """
@@ -114,9 +106,13 @@ class Game:
 
     def generate_hint(self, guess):
         """
-        Gives the player a hint about the correct code
+        Gives the player a hint about the correct code. The method iterates over the user's most recent guess to determine
+        if they have guessed a number that exists in the answer, and if so, returns the correct position of that number.
 
-        :return:
+        If the user does not have a correct number in their guess, return a random correct number from the answer, and
+        its position.
+
+        :return: A correct number in the answer, and its position in the answer as ints.
         """
         for i, j in guess, self.code:
             if i in self.code:
@@ -149,26 +145,6 @@ class Game:
     
     We may want to add test codes
     """
-    
-    def validate(self, input):
-        """
-        Validate either the code or the guess from the user's input.
-        It should be a four-digit integer separated by space.
-        :return: a list of each digit as a string (i.e ["1","2","3","4"])
-        """
-
-        # The purpose of this method is to make sure that the user is entering in valid numbers,
-        # not to check whether those numbers are in the answer.
-        # for i in range(4):
-        #     if self.generate_code == input:
-        #     print("You guessed correctly")
-        #
-        # else self.generate_code!= input:
-        #
-        #     print("You guessed wrongly" )
-        #
-        # return str(numbers)
-
 
 class UI:
     """
