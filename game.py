@@ -1,4 +1,4 @@
-import random
+
 from random import randrange
 
 class Game:
@@ -17,18 +17,30 @@ class Game:
         :param num_hints: The number of hints the user has asked for.
         :param computer_guess: The variable to be used if the computer is guessing the code.
         """
-
-        self.game_loop()
-        self.UI = UI()
         
+        num_hints = 0
+        computer_guess = None
+        numbers = [randint(1,4) for _ in range(4)]
+          
+        self.game_loop()
+        self.UI = UI()       
 
     def game_loop(self):
-
-    
+        
         """
         Main loop for game operation.
         :return: nothing
         """
+        random_number == randrange(1,4)
+        print random_number()
+        count = 0
+        while count < 4:
+            if self.guess == random_number():
+                print("Your win")
+        else:
+            
+            print ("You lose")
+        
         self.UI.start_menu()  # Display start menu to player and get player input on game mode and number of guesses
         self.game_mode, self.num_guesses = self.UI.start_menu()
 
@@ -59,42 +71,40 @@ class Game:
         Generates a random, 4-digit code with each value in the range [1,4]
         :return: the randomly generated code.
         """
-        for x in range(4):
+        for i in range(4):
             print random.randint(1,4)
             
         return self.generate_code
 
     def generate_hint(self):
-
+                   
         """
         Gives the player a hint about the correct code
         :return:
         """
-        
-        for i range(4):
-            if self.guess !=self.code:
-                print("Do you wanna a hint?")
-                        
+        while numbers!= guesses:
+            
+            
+            
+ 
 
     def generate_guess(self):
 
-        random_number == randrange(1,4)
-        print random_number()
-        count = 0
-        while count < 4:
-            if self.guess == random_number():
-                print("Your win")
-
-        else:
-            
-            print ("You lose")
-                   
         """
         Generates a random(for now) code to guess what the correct code is.
         :return: the 4-digit code with each value in the range [1,4]
         """
-               
-                                 
+        while numbers!= guesses:
+            # ask user to guess the 4 values
+            guesses = [
+                int(input("guess the first number:" )),
+                int(input("guess the second number: ")),
+                int(input("guess the third number: ")),
+                int(input("guess the fourth number: "))
+            ]
+            
+            num_hints +=1
+                                                          
     """
     I'll be thinking about anything else we may need to add to this, but for now, it's a good start.
     
@@ -102,8 +112,7 @@ class Game:
     """
     
     def validate(self, input):
-
-    
+        
         """
         Validate either the code or the guess from the user's input.
         It should be a four-digit integer seperated by space.
@@ -117,7 +126,7 @@ class Game:
 
             print("You guessed wrongly" )
             
-        return str(num)
+        return str(numbers)
 
     
 class UI:
