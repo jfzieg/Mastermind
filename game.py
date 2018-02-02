@@ -86,8 +86,8 @@ class Game:
             
             
             
+            
  
-
     def generate_guess(self):
 
         """
@@ -103,7 +103,7 @@ class Game:
                 int(input("guess the fourth number: "))
             ]
             
-            num_hints +=1
+            num_guess +=1
                                                           
     """
     I'll be thinking about anything else we may need to add to this, but for now, it's a good start.
