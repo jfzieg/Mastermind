@@ -51,7 +51,7 @@ class Game:
                     return "lose"  # end while loop, and take user to end_menu()
 
                 else:  # if the user guesses a code, return feedback to the user on correctness
-                    self.guess = input
+                    self.guess = int(input)
                     correct_pos, correct_num = self.code_analysis(self.guess)
                     if correct_pos == len(self.code):
                         return "win" # end while loop, and take user to end_menu()
@@ -167,7 +167,7 @@ class UI:
         
         game_mode = self.ask_user_for_game_mode()
         
-        game_start_message = "You choose {} game mode! Game start!".format(self.game_mode)
+        game_start_message = "You choose {} game mode! Game start!".format(game_mode)
         
         num_guesses = 8  # input the number of attempts allowed to guess the code
 
@@ -185,11 +185,11 @@ class UI:
             
             game_mode = input("Enter '1' for 'User Guess' mode, enter '2' for 'Computer Guess' mode: ") 
             
-            if game_mode == "1":
+            if game_mode == 1:
                 valid_input == True
                 return "user_guess"
 
-            elif game_mode == "2":
+            elif game_mode == 2:
                 valid_input == True
                 return "computer_guess"
 
@@ -207,19 +207,20 @@ class UI:
         """
         input_instruction = "Enter your guess as a four-digit number separated by space (i.e. 2 2 2 2).\n" \
                             "Or enter 'hint' for a hint.\n" \
-                            "Or enter 'quit' to quit."
+                            "Or enter 'quit' to quit."  # The backslashes allow the string to be multiline for readability
         valid_input = False
 
         while valid_input == False:
 
             print(input_instruction)
             instruction = input("Your input: ")
+            print(instruction)
 
             if instruction == "hint":
-                valid_input == True
+                valid_input = True
             
             elif instruction == "quit":
-                valid_input == True
+                valid_input = True
                    
             else:
                 valid_input = self.validate(instruction)
@@ -282,14 +283,14 @@ class UI:
         else:
             return False
 
-     def validate(self, input):
+    def validate(self, input):
         """
         Validate either the code or the guess from the user's input.
         It should be a four-digit integer separated by space.
 
         :return: boolean, "True" for validated input, "False" for invalidated input
         """
-
+        print(input)
         output = input.split()
         valid_digit = ["1", "2", "3", "4", "5", "6"]
 
