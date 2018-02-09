@@ -1,6 +1,8 @@
 from random import randrange
 import fileinput
 
+# test comment
+
 class Game:
     """
     An implementation of the code-guessing game, Mastermind. The object of the game is to guess a 4-digit
