@@ -2,6 +2,7 @@ from random import randrange
 import fileinput
 
 # test comment
+# test again
 
 class Game:
     """
