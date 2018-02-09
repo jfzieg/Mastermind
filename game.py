@@ -187,11 +187,11 @@ class UI:
             
             if game_mode == "1":
                 valid_input == True
-                return "user_guess"  # These values should be returned, not set
+                return "user_guess"
 
             elif game_mode == "2":
                 valid_input == True
-                return == "computer_guess"  # Return, don't set value
+                return "computer_guess"
 
             else:
                 print("Invalid input.")
@@ -205,8 +205,8 @@ class UI:
 
         :return: valid guess or instruction (hint/quit)
         """
-        input_instruction = "Enter your guess as a four-digit number separated by space (i.e. 2 2 2 2).\n"
-                            "Or enter 'hint' for a hint.\n"
+        input_instruction = "Enter your guess as a four-digit number separated by space (i.e. 2 2 2 2).\n" \
+                            "Or enter 'hint' for a hint.\n" \
                             "Or enter 'quit' to quit."
         valid_input = False
 
@@ -269,18 +269,18 @@ class UI:
         :return: boolean, "True" for starting a new game, "False" for leaving this game
         """
         
-        file = open(“statistics.txt”, “r”)
+        file = open("statistics.txt", "r")
         statistics = file.readlines()
         print("The number of wins is: ", statistics[0])
         print("The number of loses is: ", statistics[1])
-        print("The numebr of guesses is: ", statistics[2])
+        print("The number of guesses is: ", statistics[2])
         
         start_a_new_game = input("Do you want to start a new game? Enter 'yes' to start or others to quit.")
+
         if start_a_new_game == 'yes':
             return True
         else:
             return False
-    
 
      def validate(self, input):
         """
@@ -297,10 +297,11 @@ class UI:
             print("Invalid input.")
             return False
 
-        elif for e in output:
-            if e not in valid_digit:
-                print("Invalid input.")
-                return False
+        elif len(output) == 4:
+            for e in output:
+                if e not in valid_digit:
+                    print("Invalid input.")
+                    return False
         else:
             return True
 
