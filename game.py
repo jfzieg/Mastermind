@@ -1,4 +1,5 @@
 from random import randrange
+import random
 import fileinput
 
 
@@ -20,7 +21,7 @@ class Game:
         self.game_mode = "user_guess"
         self.num_guesses = 8
         self.guess = []
-
+        self.temp_index = [0, 1, 2, 3]  # keep track of which index of the code has been "hinted"
 
         self.UI = UI()  # Initializes UI iterface
         # self.game_loop()  # Starts game
@@ -137,14 +138,27 @@ class Game:
         :return: A correct number in the answer, and its position in the answer as ints.
         """
 
-        if len(self.guess) != 0:
-            for i in self.guess[len(self.guess) - 1]:
-                if i in self.code:
-                    return i, self.code.index(i)  # returns the correct number and it's position in the answer
-        else:
-            print self.code
-            index = randrange(0, 3)
-            return self.code[index], index  # Returns a correct number and its position if the user doesn't have any
+        if len(self.temp_index) == 0:                       # all digits in the code have been hinted to the user
+            return 0,0
+
+        elif len(self.guess) != 0:                          # if the user has given any guess
+            for i in self.guess[len(self.guess) - 1]:       # for each digit i
+                try:
+                    index = self.code.index(i)              # if i is in the code and hasn't been given
+                    self.temp_index.remove(index)
+                    return i, index                         # give i as a hint
+
+                except ValueError:                          # if i is not in the code or has been given
+                    temp_hint_index = random.choice(self.temp_index)  # randomly generate another hint
+                    temp_hint = self.code[temp_hint_index]
+                    self.temp_index.remove(temp_hint_index)
+                    return temp_hint, temp_hint_index
+
+        else:                                               # if the user hasn't given any guess
+            temp_hint_index = random.choice(self.temp_index)     # randomly generate another hint
+            temp_hint = self.code[temp_hint_index]
+            self.temp_index.remove(temp_hint_index)
+            return temp_hint, temp_hint_index
 
     def generate_guess(self):
         """
@@ -270,8 +284,11 @@ class UI:
 
         :return: nothing
         """
+        if hint==0 and index==0:
+            print "You have asked hint 4 time! The answer is right there! Think!"
 
-        print "Number {} is located at place {}".format(hint, index +1)
+        else:
+            print "Number {} is located at place {}".format(hint, index +1)
 
     def user_generates_code(self):
         """
@@ -321,7 +338,7 @@ class UI:
         if start_a_new_game == 'yes':
             return True
         else:
-            return False
+            return 'quit'
 
     def validate(self, input):
         """
@@ -332,7 +349,6 @@ class UI:
         """
         output = input.split()
         valid_digit = ["1", "2", "3", "4", "5", "6"]
-        print(output)
         if len(output) != 4:
             print("Invalid input.")
             return False
