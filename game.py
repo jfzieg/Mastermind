@@ -300,7 +300,6 @@ class UI:
         else:
             print "Number {} is located at place {}".format(hint, index +1)
 
-        print "Number {} is located at place {}".format(hint, index + 1)
 
 
     def user_generates_code(self):
