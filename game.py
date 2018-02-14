@@ -299,13 +299,14 @@ class UI:
         print(welcome_message)
         print(introduction)
 
-        game_mode = self.ask_user_for_game_mode()
+        game_mode = self.get_first()
+        num_rounds = self.get_num_rounds()
 
         game_start_message = "You choose {} game mode! Game start!".format(game_mode)
 
-        return game_mode
+        return game_mode, num_rounds
 
-    def ask_user_for_game_mode(self):
+    def get_first(self):
         """
         To initiating the game, ask the user for the game mode
 
@@ -316,7 +317,7 @@ class UI:
 
         while valid_input == False:
 
-            game_mode = raw_input("Enter '1' for 'User Guess' mode, enter '2' for 'Computer Guess' mode: ")
+            game_mode = raw_input("Enter '1' for user guess first, enter '2' for computer guess first : ")
 
             if game_mode == '1':
                 valid_input = True
@@ -328,6 +329,24 @@ class UI:
 
             else:
                 print("Invalid input.")
+
+
+    def get_num_rounds(self):
+
+        valid_input = False
+
+        while valid_input == False:
+
+            num_rounds = raw_input("Enter the number of rounds you would like to play: ")
+
+            try:
+                num_rounds = int(num_rounds)
+                valid_input = True
+                return num_rounds
+
+            except ValueError:
+                print("Invalid input.")
+
 
     def guess_menu(self):
         """
