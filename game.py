@@ -20,6 +20,7 @@ class Game:
         """
         Setup for game start, initializes class variable for correct code, num_hints, the game_mode,
         num_guesses, a holder for the user's guess, and starts game_loop
+        @joseph zieg & Yixiong Zhang
         """
 
         self.code = []
@@ -143,7 +144,7 @@ class Game:
         so that they can make a new educated guess.
         Does not test for correct guess format.
 
-        @ Yujia Zhang
+        @ Yujia Zhang & Yixiong Zhang
         :return: int values for the correct values in the correct position (correct_pos),
         and the number of correct values in the guess (correct_num) , mutually exclusive.
         """
