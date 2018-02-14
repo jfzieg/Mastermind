@@ -5,7 +5,15 @@ class Game:
     """
     An implementation of the code-guessing game, Mastermind. The object of the game is to guess a 4-digit
     code, with each digit in the range [1,6], within a specified amount of tries.
-    This game is played by a user against the computer.
+    This game is played by a user against the computer, or vice versa. The computer and the user play against eachother
+    for a user-defined number of rounds.
+
+    The program is organized in a two-layer approach. Input/output handling and validation is done by the UI helper class,
+    and game logic/simulation is handled by the Game class. The basic structure is as follows:
+    A Game object calls game_loop, which starts a new game, asking the player how many rounds they'd like to play, and who will guess first. The game_loop
+    then iterates for the number of rounds playing a game and keeping track of the user's and the computer's scores.
+    After the number of rounds is reached, the overall winner is determined, and displayed to the user.
+    The user then has the option to play a new game.
     """
 
     def __init__(self):
@@ -56,6 +64,8 @@ class Game:
                     self.guess = self.generate_guess()  # Generate initial guess
 
                 result, guesses = self.play_game()  # Play game!
+                if result == "quit":
+                    break
 
                 if self.game_mode == "user_guess":  # Add points to computer's score if user guesses
                     self.computer_points += guesses
@@ -65,10 +75,14 @@ class Game:
                     self.user_points += guesses
                     self.user_points += 1 if result == "lose" else 0  # Add one if computer loses
 
-                self.game_mode = "computer_guess" if self.game_mode == "user_guess" else "user_guess"
-                rounds_played += .5  # Each game played by computer/user is 1/2 a round
+                self.UI.display_outcome(result, self.game_mode)  # Display the outcome of that round
+                self.game_mode = "computer_guess" if self.game_mode == "user_guess" else "user_guess" # Change game_mode
 
-            final_result = "win" if self.user_points > self.computer_points else "lose"
+                rounds_played += .5  # Each game played by computer/user is 1/2 a round
+            if result != "quit":
+                final_result = "win" if self.user_points > self.computer_points else "lose"
+            else:
+                final_result = "quit"
             self.save_stats(final_result)  # Write stats to file
             keep_playing = self.UI.end_menu(final_result)  # Go to end menu, display stats, and loop
 
@@ -93,7 +107,7 @@ class Game:
                     self.UI.hint(hint, index)  # Gives a hint using the user's most recent guess
 
                 elif response == "quit":
-                    return "lose", guesses  # end while loop, and take user to end_menu()
+                    return "quit", guesses  # end while loop, and take user to end_menu()
 
                 else:  # if the user guesses a code, return feedback to the user on correctness
                     # print "code is: ", self.code  # PRINTS ANSWER, REMOVE IN FINAL
@@ -111,10 +125,8 @@ class Game:
 
                 correct_pos, correct_num = self.code_analysis()
                 if correct_pos == len(self.code):
-                    self.UI.display_guess(self.guess)
                     return "win", guesses  # end while loop, and take user to end_menu()
                 else:
-                    self.UI.display_guess(self.guess)
                     self.UI.feedback(correct_pos, correct_num)
                     self.reduce_guesses(correct_pos, correct_num)  # Reduce search space for possible guesses
                     self.guess = self.generate_guess()  # Make new, random guess
@@ -244,7 +256,7 @@ class Game:
         for i in range(0, 4):
             self.guess_set.append(["1", "2", "3", "4", "5", "6"])
 
-    def save_stats(self, result, guesses):
+    def save_stats(self, result):
         """
         Saves game statistics to a save file for aggregating player data over time. This includes the user's win/loss
         and the computer's win/loss, and the average number of guesses the player takes to find the answer.
@@ -265,8 +277,8 @@ class Game:
                 statistics[1] += 1 if result == "lose" else 0
 
             if self.game_mode == "computer_guess":
-                statistics[3] += 1 if result == "win" else 0  # add 1 to win or loss for computer
-                statistics[4] += 1 if result == "lose" else 0
+                statistics[2] += 1 if result == "win" else 0  # add 1 to win or loss for computer
+                statistics[3] += 1 if result == "lose" else 0
 
             for i in statistics:
                 statistics[statistics.index(i)] = str(i)  # Cast each line as an str for file writing
@@ -294,7 +306,7 @@ class UI:
         :return: the game mode as a string
         """
         welcome_message = "\nWelcome to MasterMind"
-        introduction = "This is a color-/number-guessing game. The code is a four-digit number and there are six options for each digit." \
+        introduction = "This is a number-guessing game. The code is a four-digit number and there are six options for each digit." \
                        "\nThe one who guesses the code correctly under certain tries wins the game!"
         print(welcome_message)
         print(introduction)
@@ -341,11 +353,13 @@ class UI:
 
             try:
                 num_rounds = int(num_rounds)
-                valid_input = True
-                return num_rounds
+                if num_rounds > 0:
+                    return num_rounds
+                else:
+                    print("\nYou must play at least one round.")
 
             except ValueError:
-                print("Invalid input.")
+                print("\nInvalid input.")
 
 
     def guess_menu(self):
@@ -417,7 +431,7 @@ class UI:
         print("\nThe number of the correct positions is {}.".format(num_correct_pos))
         print("The number of the correct numbers is {}.".format(num_correct))
 
-    def display_guess(self, guess):
+    def display_outcome(self, result, game_mode):
         """
         displays the computer's guess for the player to see
 
@@ -425,9 +439,11 @@ class UI:
         :param guess: The computer's current guess
         :return: nothing
         """
-        print "My guess was {0} {1} {2} {3}".format(*guess)
 
-    def end_menu(self, result):
+        player = "\nYou" if game_mode == "user_guess" else "\nI"
+        print "{} {} this round!".format(player, result)
+
+    def end_menu(self, final_result):
         """
         End the game
         Display Win/Loss and gameplay statistics
@@ -439,12 +455,11 @@ class UI:
         with open("statistics.txt", "r") as file_in:
             statistics = file_in.read().splitlines()
 
-        print "\nYou {}!".format(result)
+        print "\nYou {}!".format(final_result)
         print "\nThe user's number of wins is: ", statistics[0]
         print "The user's number of losses is: ", statistics[1]
-        print "The average number of user guesses: ", statistics[2]
-        print "The computer's number of wins is: ", statistics[3]
-        print "The computer's number of losses is: ", statistics[4]
+        print "The computer's number of wins is: ", statistics[2]
+        print "The computer's number of losses is: ", statistics[3]
 
         start_a_new_game = raw_input("Do you want to start a new game? Enter 'yes' to start or others to quit: ")
 
