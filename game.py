@@ -1,6 +1,5 @@
 import random
-import fileinput
-import itertools
+
 
 class Game:
     """
@@ -112,25 +111,25 @@ class Game:
         so that they can make a new educated guess.
         Does not test for correct guess format.
 
-        @ Yixiong Zhang
+        @ Yujia Zhang
         :return: int values for the correct values in the correct position (correct_pos),
         and the number of correct values in the guess (correct_num) , mutually exclusive.
         """
         correct_pos = 0
         correct_num = 0
-        temp_code_index = [0,1,2,3]
+        temp_code_index = [0, 1, 2, 3]
         temp_code = self.code[:]                # make a copy of the original code
 
-    
         for i in range(4):                      # Loop over each digit in the most recent guess and the correct code
             if self.guess[i] == self.code[i]:   # Test to find a correct digit in the correct place
                 correct_pos += 1
                 temp_code_index.remove(i)       # remove the index to avoid double check in "correct_num"
                 temp_code[i] = None             # remove the correct digit from the code
-        
+
         for i in temp_code_index:               # Loop over each digit in the most recent guess and the correct code
             if self.guess[i] in temp_code:
                 correct_num += 1
+                temp_code[temp_code.index(self.guess[i])] = None  # remove 1st occurrence of correct digit in the code
 
         return correct_pos, correct_num
 
