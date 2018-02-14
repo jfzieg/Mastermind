@@ -119,20 +119,19 @@ class Game:
         """
         correct_pos = 0
         correct_num = 0
-        correct_nums = []
+        temp_code_index = [0,1,2,3]
+        temp_code = self.code[:]
 
     
-        for i in range(4):  # Loop over each digit in the most recent guess and the correct code
-            # for j in guess:
-            digit = self.guess[i]
-            if self.code[i] == digit:  # Test to find a correct digit in the correct place
+        for i in range(4):                      # Loop over each digit in the most recent guess and the correct code
+            if self.guess[i] == self.code[i]:   # Test to find a correct digit in the correct place
                 correct_pos += 1
-                correct_nums.append(i)
+                temp_code_index.remove(i)       # remove the index to avoid double check in "correct_num"
+                temp_code[i] = None
         
-        for j in range(4):  # Loop over each digit in the most recent guess and the correct code
-                code_digit = self.code[j]
-                if digit == code_digit and j not in correct_nums:
-                    correct_num += 1
+        for i in temp_code_index:               # Loop over each digit in the most recent guess and the correct code
+            if self.guess[i] in temp_code:
+                correct_num += 1
 
         return correct_pos, correct_num
 
