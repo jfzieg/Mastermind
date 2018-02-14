@@ -72,12 +72,13 @@ class Game:
                     self.computer_points += 1 if result == "lose" else 0  # Add one if user loses
 
                 if self.game_mode == "computer_guess":  # Add points to user's score if computer guesses
-                    self.user_points += guesses / 2
+                    self.user_points += guesses / 2  # reducing for computer's larger num_guesses
                     self.user_points += 1 if result == "lose" else 0  # Add one if computer loses
 
                 # Display the outcome of that round
                 self.UI.display_outcome(result, self.game_mode, self.code, self.user_points, self.computer_points)
                 self.game_mode = "computer_guess" if self.game_mode == "user_guess" else "user_guess" # Change game_mode
+                self.num_guesses = 8 if self.game_mode == "user_guess" else 14  # reset max guesses
 
                 rounds_played += .5  # Each game played by computer/user is 1/2 a round
             if result != "quit":
@@ -98,7 +99,7 @@ class Game:
         """
         guesses = 0  # the number of guesses the player has made
 
-        while guesses <= self.num_guesses:
+        while guesses < self.num_guesses:
             # User Guesses
             if self.game_mode == "user_guess":
 
@@ -230,7 +231,7 @@ class Game:
                 if old_guess[i] in self.guess_set[i]:
                     self.guess_set[i].remove(old_guess[i])
                 elif correct_num == 0:  # If there are no correct numbers at all, then remove all numbers in the guess
-                    for j in range(len(self.guess_set)):  # from guess set.
+                    for j in range(1, len(self.guess_set)):  # from guess set.
                         if old_guess[j] in self.guess_set[j]:
                             self.guess_set[j].remove(old_guess[j])
 
