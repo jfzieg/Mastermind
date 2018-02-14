@@ -28,30 +28,45 @@ class Game:
 
     def game_loop(self):
         """
-        Main loop for game operation.
+        Main loop for game operation. Initializes the answer code based on game_mode, as well as additional variables
+        guess_set and an initial guess if the computer is playing.
 
+        @joseph zieg
         :return: nothing
         """
         keep_playing = True
 
         while keep_playing:
             self.__init__()
-            self.game_mode, self.num_guesses = self.UI.start_menu()  # Get user input on game mode and max number of guesses.
+            self.game_mode = self.UI.start_menu()  # Get user input on game mode and max number of guesses.
 
             if self.game_mode == "user_guess":
-                # self.code = self.generate_code()
-                self.code = ['5', '5', '1', '2']  # Test to eliminate error
+                self.code = self.generate_code()
+                # self.code = ['1', '2', '1', '2']  # Test code for bug checking
+
             elif self.game_mode == "computer_guess":
                 self.code = self.UI.user_generates_code().split()
-                self.guess.append(["1", "1", "2", "2"])  # Standard initial guess
+                self.num_guesses = 15  # Allows code solver a greater chance of winning
                 self.create_set()  # Creates set for eliminating non-possible numbers
+                self.guess = self.generate_guess()  # Generate initial guess
+
             result, guesses = self.play_game()  # Play game!
 
-            self.save_stats(result, guesses)
-            keep_playing = self.UI.end_menu(result)
+            self.save_stats(result, guesses)  # Write stats to file
+
+            keep_playing = self.UI.end_menu(result, self.game_mode,
+                                            self.code)  # Go to end menu, display stats, and loop
 
     def play_game(self):
-        i = 0
+        """
+        Game loop for user/computer guess operations. The user/computer is allowed to guess up to
+        the num_guesses amount, then the loop ends. The loop calls functions to get new user/computer input for the
+        guess, return feedback for the player, and determine if the game is won ro lost.
+
+        @joseph zieg
+        :return: "win" or "lose" based on outcome, the number of guesses i the player required
+        """
+        i = 0  # the number of guesses the player has made
 
         while i <= self.num_guesses:
             # User Guesses
@@ -66,7 +81,7 @@ class Game:
                     return "lose", i  # end while loop, and take user to end_menu()
 
                 else:  # if the user guesses a code, return feedback to the user on correctness
-                    print "code is: ", self.code  # PRINTS ANSWER, REMOVE IN FINAL
+                    # print "code is: ", self.code  # PRINTS ANSWER, REMOVE IN FINAL
                     self.guess = response.split()  # Add user's guess to list of guesses
 
                     correct_pos, correct_num = self.code_analysis()
@@ -81,20 +96,24 @@ class Game:
 
                 correct_pos, correct_num = self.code_analysis()
                 if correct_pos == len(self.code):
+                    self.UI.display_guess(self.guess)
                     return "win", i  # end while loop, and take user to end_menu()
                 else:
+                    self.UI.display_guess(self.guess)
                     self.UI.feedback(correct_pos, correct_num)
-                    self.guess.append(self.generate_guess(correct_pos, correct_num))
+                    self.reduce_guesses(correct_pos, correct_num)  # Reduce search space for possible guesses
+                    self.guess = self.generate_guess()  # Make new, random guess
+
                 i += 1
         return "lose", i  # end while loop, and take user to end_menu()
 
     def code_analysis(self):
-
         """
         Analyses the user's current guess against the code to return feedback for the computer or player,
         so that they can make a new educated guess.
         Does not test for correct guess format.
 
+        @
         :return: int values for the correct values in the correct position (correct_pos),
         and the number of correct values in the guess (correct_num) , mutually exclusive.
         """
@@ -102,25 +121,28 @@ class Game:
         correct_num = 0
         correct_nums = []
 
-        # for i in range(4):  # Loop over each digit in the most recent guess and the correct code
-        #     digit = self.guess[len(self.guess) - 1][i]
-        #     if self.code[i] == digit:  # Test to find a correct digit in the correct place
-        #         correct_pos += 1
-        #         # correct_num += 1  # Test to see if outputs correctly
-        #         correct_nums.append(digit)
-
-        # Not in a working state currently
         for i in range(4):  # Loop over each digit in the most recent guess and the correct code
-            # for j in guess:
             digit = self.guess[i]
             if self.code[i] == digit:  # Test to find a correct digit in the correct place
                 correct_pos += 1
-                correct_nums.append(i)
 
-            for j in range(4):  # Loop over each digit in the most recent guess and the correct code
-                code_digit = self.code[j]
-                if digit == code_digit and j not in correct_nums:
-                    correct_num += 1
+                correct_nums.append(digit)
+            elif digit in self.code and digit not in correct_nums:
+                correct_num += 1
+                correct_nums.append(digit)
+
+        # Not in a working state currently
+        # for i in range(4):  # Loop over each digit in the most recent guess and the correct code
+        #     # for j in guess:
+        #     digit = self.guess[i]
+        #     if self.code[i] == digit:  # Test to find a correct digit in the correct place
+        #         correct_pos += 1
+        #         correct_nums.append(i)
+        #
+        #     for j in range(4):  # Loop over each digit in the most recent guess and the correct code
+        #         code_digit = self.code[j]
+        #         if digit == code_digit and j not in correct_nums:
+        #             correct_num += 1
 
         return correct_pos, correct_num
 
@@ -128,6 +150,7 @@ class Game:
         """
         Generates a random, 4-digit code with each value in the range [1,6]
 
+        @
         :return: the randomly generated code.
         """
         code = []
@@ -145,72 +168,101 @@ class Game:
         If the user does not have a correct number in their guess, return a random correct number from the answer, and
         its position.
 
+        @
         :return: A correct number in the answer, and its position in the answer as ints.
         """
 
-        if len(self.temp_index) == 0:                       # all digits in the code have been hinted to the user
+        if len(self.temp_index) == 0:  # all digits in the code have been hinted to the user
             return 0, 0
 
-        elif len(self.guess) != 0:                          # if the user has given any guess
-            for i in self.guess[len(self.guess) - 1]:       # for each digit i
+        elif len(self.guess) != 0:  # if the user has given any guess
+            for i in self.guess[len(self.guess) - 1]:  # for each digit i
                 try:
-                    index = self.code.index(i)              # if i is in the code and hasn't been given
+                    index = self.code.index(i)  # if i is in the code and hasn't been given
                     self.temp_index.remove(index)
-                    return i, index                         # give i as a hint
+                    return i, index  # give i as a hint
 
-                except ValueError:                          # if i is not in the code or has been given
+                except ValueError:  # if i is not in the code or has been given
                     temp_hint_index = random.choice(self.temp_index)  # randomly generate another hint
                     temp_hint = self.code[temp_hint_index]
                     self.temp_index.remove(temp_hint_index)
                     return temp_hint, temp_hint_index
 
-        else:                                               # if the user hasn't given any guess
-            temp_hint_index = random.choice(self.temp_index)     # randomly generate another hint
+        else:  # if the user hasn't given any guess
+            temp_hint_index = random.choice(self.temp_index)  # randomly generate another hint
             temp_hint = self.code[temp_hint_index]
             self.temp_index.remove(temp_hint_index)
             return temp_hint, temp_hint_index
 
-    def generate_guess(self, correct_num, correct_pos):
+    def reduce_guesses(self, correct_pos, correct_num):
         """
-        Generates a random(for now) code to guess what the correct code is.
-        :return: the 4-digit code with each value in the range [1,6]
-        """
-        old_guess = self.guess[len(self.guess) - 1]
+        Reduces the possible search space based upon feedback from code_analysis(). Numbers that would not generate a
+        correct answer because of 0 correct numbers, or 0 correct positions will be removed from self.guess_set. This
+        is then used by generate guess to make a new code guess based on the reduced search space.
 
-        print self.guess_set
-        if correct_pos == 0:
-            for i in range(len(old_guess)):
+        @joseph zieg
+        :param correct_pos:
+        :param correct_num:
+        :return:
+        """
+        old_guess = self.guess
+
+        if correct_pos == 0:  # If there are no numbers in the correct position, those numbers can be removed from their
+            for i in range(len(old_guess)):  # index in guess_set.
                 if old_guess[i] in self.guess_set[i]:
                     self.guess_set[i].remove(old_guess[i])
-                elif correct_num == 0:
-                    for j in range(len(self.guess_set)):
+                elif correct_num == 0:  # If there are no correct numbers at all, then remove all numbers in the guess
+                    for j in range(len(self.guess_set)):  # from guess set.
                         if old_guess[j] in self.guess_set[j]:
                             self.guess_set[j].remove(old_guess[j])
+
+    def generate_guess(self):
+        """
+        Generates a random code to guess what the correct code is, from a the pool of guesses possible.
+
+        @joseph zieg
+        :return: the 4-digit code with each value in the range [1,6]
+        """
         new_code = []
         for i in self.guess_set:
-            new_code.append(i[random.randrange(0, len(i) - 1)]) if len(i) > 1 else new_code.append(i[0])
+            new_code.append(i[random.randrange(0, len(i))]) if len(i) > 1 else new_code.append(i[0])
 
         return new_code
 
     def create_set(self):
+        """
+        Generates the initial possible search space for code combinations that can be generated by the computer.
+
+        @joseph zieg
+        :return: nothing
+        """
         for i in range(0, 4):
             self.guess_set.append(["1", "2", "3", "4", "5", "6"])
 
     def save_stats(self, result, guesses):
+        """
+        Saves game statistics to a save file for aggregating player data over time. This includes the user's win/loss
+        and the computer's win/loss, and the average number of guesses the player takes to find the answer.
 
+        @joseph zieg
+        :param result: The outcome of the game
+        :param guesses: The number of guesses needed to find the correct answer
+        :return: nothing
+        """
         with open("statistics.txt", "r") as file_in:
             statistics = file_in.read().splitlines()
 
             for i in statistics:
-                statistics[statistics.index(i)] = float(i)  # Cast each line as an int for additions
+                statistics[statistics.index(i)] = float(i)  # Cast each line as a float for additions/avgs
 
             if self.game_mode == "user_guess":
-                statistics[0] += 1 if result == "win" else 0  # add 1 to win or lose for user
+                statistics[0] += 1 if result == "win" else 0  # add 1 to win or loss for user
                 statistics[1] += 1 if result == "lose" else 0
-                statistics[2] = (statistics[2] + guesses) / 2.0 if result == "win" else statistics[2]  # Avg guesses for win
+                # Avg guesses for win
+                statistics[2] = (statistics[2] + guesses) / 2.0 if result == "win" else statistics[2]
 
             if self.game_mode == "computer_guess":
-                statistics[3] += 1 if result == "win" else 0  # add 1 to win or lose for computer
+                statistics[3] += 1 if result == "win" else 0  # add 1 to win or loss for computer
                 statistics[4] += 1 if result == "lose" else 0
 
             for i in statistics:
@@ -235,7 +287,8 @@ class UI:
         Display start menu text for user, prompt for input on game mode (computer or player),
         and max number of guesses.
 
-        :return: the game mode as a string, and max number of guesses as an int.
+        @
+        :return: the game mode as a string
         """
         welcome_message = "\nWelcome to MasterMind"
         introduction = "Introduction to this game (to be added)"
@@ -246,33 +299,32 @@ class UI:
 
         game_start_message = "You choose {} game mode! Game start!".format(game_mode)
 
-        num_guesses = 8  # input the number of attempts allowed to guess the code
-
-        return game_mode, num_guesses
+        return game_mode
 
     def ask_user_for_game_mode(self):
         """
         To initiating the game, ask the user for the game mode
 
+        @
         :return: the game mode (user_guess/computer_guess)
         """
         valid_input = False
 
         while valid_input == False:
-            
-            game_mode = input("Enter '1' for 'User Guess' mode, enter '2' for 'Computer Guess' mode: ")
-            
-            if game_mode == 1:
+
+            game_mode = raw_input("Enter '1' for 'User Guess' mode, enter '2' for 'Computer Guess' mode: ")
+
+            if game_mode == '1':
                 valid_input = True
                 return "user_guess"
 
-            elif game_mode == 2:
+            elif game_mode == '2':
                 valid_input = True
                 return "computer_guess"
 
             else:
                 print("Invalid input.")
-        
+
     def guess_menu(self):
         """
         Display in-game options for user or the next code guess,
@@ -280,6 +332,7 @@ class UI:
 
         Input should check for correct exit/hint statements and valid guesses.
 
+        @
         :return: valid guess or instruction (hint/quit)
         """
         input_instruction = "\nEnter your guess as a four-digit number separated by space (i.e. 2 2 2 2).\n" \
@@ -294,10 +347,10 @@ class UI:
 
             if instruction == "hint":
                 valid_input = True
-            
+
             elif instruction == "quit":
                 valid_input = True
-                   
+
             else:
                 valid_input = self.validate(instruction)
 
@@ -307,6 +360,7 @@ class UI:
         """
         Display the hint
 
+        @
         :return: nothing
         """
         if hint == 0 and index == 0:
@@ -319,6 +373,7 @@ class UI:
         """
         In the "computer_guess" mode, ask the user to input the code and validate the code
 
+        @
         :return: the user generated code
         """
         valid_input = False
@@ -333,24 +388,38 @@ class UI:
         """
         Display computer feedback on user's code guess
 
+        @
         :return: nothing
         """
         print("\nThe number of the correct positions is {}.".format(num_correct_pos))
         print("The number of the correct numbers is {}.".format(num_correct))
 
-    def end_menu(self, result):
+    def display_guess(self, guess):
+        """
+        displays the computer's guess for the player to see
+
+        @
+        :param guess: The computer's current guess
+        :return: nothing
+        """
+        print "My guess was {0} {1} {2} {3}".format(*guess)
+
+    def end_menu(self, result, game_mode, code):
         """
         End the game
         Display Win/Loss and gameplay statistics
 
+        @
         :return: boolean, "True" for starting a new game, "False" for leaving this game
         """
 
         with open("statistics.txt", "r") as file_in:
             statistics = file_in.read().splitlines()
+        player = "You" if game_mode == "user_guess" else "I"
 
-        print("You {}!".format(result))
-        print "The user's number of wins is: ", statistics[0]
+        print "\n{} {}!".format(player, result)
+        print "The correct code was {0} {1} {2} {3}".format(*code)
+        print "\nThe user's number of wins is: ", statistics[0]
         print "The user's number of losses is: ", statistics[1]
         print "The average number of user guesses: ", statistics[2]
         print "The computer's number of wins is: ", statistics[3]
@@ -369,6 +438,7 @@ class UI:
         Validate either the code or the guess from the user's input.
         It should be a four-digit integer separated by space.
 
+        @
         :return: boolean, "True" for validated input, "False" for invalidated input
         """
         output = input.split()
@@ -387,5 +457,3 @@ class UI:
 
 game = Game()
 game.game_loop()
-
-
