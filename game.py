@@ -2,7 +2,6 @@ import random
 import fileinput
 import itertools
 
-
 class Game:
     """
     An implementation of the code-guessing game, Mastermind. The object of the game is to guess a 4-digit
@@ -120,14 +119,14 @@ class Game:
         correct_pos = 0
         correct_num = 0
         temp_code_index = [0,1,2,3]
-        temp_code = self.code[:]
+        temp_code = self.code[:]                # make a copy of the original code
 
     
         for i in range(4):                      # Loop over each digit in the most recent guess and the correct code
             if self.guess[i] == self.code[i]:   # Test to find a correct digit in the correct place
                 correct_pos += 1
                 temp_code_index.remove(i)       # remove the index to avoid double check in "correct_num"
-                temp_code[i] = None
+                temp_code[i] = None             # remove the correct digit from the code
         
         for i in temp_code_index:               # Loop over each digit in the most recent guess and the correct code
             if self.guess[i] in temp_code:
