@@ -21,6 +21,10 @@ class Game:
         self.guess = []
         self.temp_index = [0, 1, 2, 3]  # keep track of which index of the code has been "hinted"
         self.guess_set = []
+        self.num_rounds = 1
+
+        self.user_points = 0
+        self.computer_points = 0
 
         self.UI = UI()  # Initializes UI iterface
 
@@ -36,24 +40,37 @@ class Game:
 
         while keep_playing:
             self.__init__()
-            self.game_mode = self.UI.start_menu()  # Get user input on game mode and max number of guesses.
+            rounds_played = 0
+            # Get user input on game mode and number of rounds to play.
+            self.game_mode, self.num_rounds = self.UI.start_menu()
 
-            if self.game_mode == "user_guess":
-                # self.code = self.generate_code()
-                self.code = ['5', '5', '1', '2']  # Test code for bug checking
+            while rounds_played < self.num_rounds:
+                if self.game_mode == "user_guess":
+                    self.code = self.generate_code()
+                    # self.code = ['5', '5', '1', '2']  # Test code for bug checking
 
-            elif self.game_mode == "computer_guess":
-                self.code = self.UI.user_generates_code().split()
-                self.num_guesses = 15  # Allows code solver a greater chance of winning
-                self.create_set()  # Creates set for eliminating non-possible numbers
-                self.guess = self.generate_guess()  # Generate initial guess
+                elif self.game_mode == "computer_guess":
+                    self.code = self.UI.user_generates_code().split()
+                    self.num_guesses = 10  # Allows code solver a greater chance of winning
+                    self.create_set()  # Creates set for eliminating non-possible numbers
+                    self.guess = self.generate_guess()  # Generate initial guess
 
-            result, guesses = self.play_game()  # Play game!
+                result, guesses = self.play_game()  # Play game!
 
-            self.save_stats(result, guesses)  # Write stats to file
+                if self.game_mode == "user_guess":  # Add points to computer's score if user guesses
+                    self.computer_points += guesses
+                    self.computer_points += 1 if result == "lose" else 0  # Add one if user loses
 
-            keep_playing = self.UI.end_menu(result, self.game_mode,
-                                            self.code)  # Go to end menu, display stats, and loop
+                if self.game_mode == "computer_guess":  # Add points to user's score if computer guesses
+                    self.user_points += guesses
+                    self.user_points += 1 if result == "lose" else 0  # Add one if computer loses
+
+                self.game_mode = "computer_guess" if self.game_mode == "user_guess" else "user_guess"
+                rounds_played += .5  # Each game played by computer/user is 1/2 a round
+
+            final_result = "win" if self.user_points > self.computer_points else "lose"
+            self.save_stats(final_result)  # Write stats to file
+            keep_playing = self.UI.end_menu(final_result)  # Go to end menu, display stats, and loop
 
     def play_game(self):
         """
@@ -64,9 +81,9 @@ class Game:
         @joseph zieg
         :return: "win" or "lose" based on outcome, the number of guesses i the player required
         """
-        i = 0  # the number of guesses the player has made
+        guesses = 0  # the number of guesses the player has made
 
-        while i <= self.num_guesses:
+        while guesses <= self.num_guesses:
             # User Guesses
             if self.game_mode == "user_guess":
 
@@ -76,7 +93,7 @@ class Game:
                     self.UI.hint(hint, index)  # Gives a hint using the user's most recent guess
 
                 elif response == "quit":
-                    return "lose", i  # end while loop, and take user to end_menu()
+                    return "lose", guesses  # end while loop, and take user to end_menu()
 
                 else:  # if the user guesses a code, return feedback to the user on correctness
                     # print "code is: ", self.code  # PRINTS ANSWER, REMOVE IN FINAL
@@ -84,10 +101,10 @@ class Game:
 
                     correct_pos, correct_num = self.code_analysis()
                     if correct_pos == len(self.code):
-                        return "win", i  # end while loop, and take user to end_menu()
+                        return "win", guesses  # end while loop, and take user to end_menu()
                     else:
                         self.UI.feedback(correct_pos, correct_num)
-                    i += 1
+                    guesses += 1
 
             # Computer Guesses
             elif self.game_mode == "computer_guess":
@@ -95,15 +112,15 @@ class Game:
                 correct_pos, correct_num = self.code_analysis()
                 if correct_pos == len(self.code):
                     self.UI.display_guess(self.guess)
-                    return "win", i  # end while loop, and take user to end_menu()
+                    return "win", guesses  # end while loop, and take user to end_menu()
                 else:
                     self.UI.display_guess(self.guess)
                     self.UI.feedback(correct_pos, correct_num)
                     self.reduce_guesses(correct_pos, correct_num)  # Reduce search space for possible guesses
                     self.guess = self.generate_guess()  # Make new, random guess
 
-                i += 1
-        return "lose", i  # end while loop, and take user to end_menu()
+                guesses += 1
+        return "lose", guesses  # end while loop, and take user to end_menu()
 
     def code_analysis(self):
         """
@@ -240,13 +257,11 @@ class Game:
             statistics = file_in.read().splitlines()
 
             for i in statistics:
-                statistics[statistics.index(i)] = float(i)  # Cast each line as a float for additions/avgs
+                statistics[statistics.index(i)] = int(i)  # Cast each line as an int for additions
 
             if self.game_mode == "user_guess":
                 statistics[0] += 1 if result == "win" else 0  # add 1 to win or loss for user
                 statistics[1] += 1 if result == "lose" else 0
-                # Avg guesses for win
-                statistics[2] = (statistics[2] + guesses) / 2.0 if result == "win" else statistics[2]
 
             if self.game_mode == "computer_guess":
                 statistics[3] += 1 if result == "win" else 0  # add 1 to win or loss for computer
@@ -392,7 +407,7 @@ class UI:
         """
         print "My guess was {0} {1} {2} {3}".format(*guess)
 
-    def end_menu(self, result, game_mode, code):
+    def end_menu(self, result):
         """
         End the game
         Display Win/Loss and gameplay statistics
@@ -403,10 +418,8 @@ class UI:
 
         with open("statistics.txt", "r") as file_in:
             statistics = file_in.read().splitlines()
-        player = "You" if game_mode == "user_guess" else "I"
 
-        print "\n{} {}!".format(player, result)
-        print "The correct code was {0} {1} {2} {3}".format(*code)
+        print "\nYou {}!".format(result)
         print "\nThe user's number of wins is: ", statistics[0]
         print "The user's number of losses is: ", statistics[1]
         print "The average number of user guesses: ", statistics[2]
