@@ -275,11 +275,12 @@ class UI:
         Display start menu text for user, prompt for input on game mode (computer or player),
         and max number of guesses.
 
-        @
+        @ Yujia Zhang
         :return: the game mode as a string
         """
         welcome_message = "\nWelcome to MasterMind"
-        introduction = "Introduction to this game (to be added)"
+        introduction = "This is a color-/number-guessing game. The code is a four-digit number and there are six options for each digit." \
+                       "\nThe one who guesses the code correctly under certain tries wins the game!"
         print(welcome_message)
         print(introduction)
 
@@ -293,7 +294,7 @@ class UI:
         """
         To initiating the game, ask the user for the game mode
 
-        @
+        @ Yujia Zhang
         :return: the game mode (user_guess/computer_guess)
         """
         valid_input = False
@@ -320,7 +321,7 @@ class UI:
 
         Input should check for correct exit/hint statements and valid guesses.
 
-        @
+        @ Yujia Zhang
         :return: valid guess or instruction (hint/quit)
         """
         input_instruction = "\nEnter your guess as a four-digit number separated by space (i.e. 2 2 2 2).\n" \
@@ -348,7 +349,7 @@ class UI:
         """
         Display the hint
 
-        @
+        @ Yujia Zhang
         :return: nothing
         """
         if hint == 0 and index == 0:
@@ -361,7 +362,7 @@ class UI:
         """
         In the "computer_guess" mode, ask the user to input the code and validate the code
 
-        @
+        @ Yujia Zhang
         :return: the user generated code
         """
         valid_input = False
@@ -376,7 +377,7 @@ class UI:
         """
         Display computer feedback on user's code guess
 
-        @
+        @ Yujia Zhang
         :return: nothing
         """
         print("\nThe number of the correct positions is {}.".format(num_correct_pos))
@@ -386,7 +387,7 @@ class UI:
         """
         displays the computer's guess for the player to see
 
-        @
+        @joseph zieg
         :param guess: The computer's current guess
         :return: nothing
         """
@@ -397,7 +398,7 @@ class UI:
         End the game
         Display Win/Loss and gameplay statistics
 
-        @
+        @ Yujia Zhang
         :return: boolean, "True" for starting a new game, "False" for leaving this game
         """
 
@@ -426,7 +427,7 @@ class UI:
         Validate either the code or the guess from the user's input.
         It should be a four-digit integer separated by space.
 
-        @
+        @ Yujia Zhang
         :return: boolean, "True" for validated input, "False" for invalidated input
         """
         output = input.split()
