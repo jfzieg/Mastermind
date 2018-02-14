@@ -113,7 +113,7 @@ class Game:
         so that they can make a new educated guess.
         Does not test for correct guess format.
 
-        @
+        @ Yixiong Zhang
         :return: int values for the correct values in the correct position (correct_pos),
         and the number of correct values in the guess (correct_num) , mutually exclusive.
         """
@@ -121,28 +121,18 @@ class Game:
         correct_num = 0
         correct_nums = []
 
+    
         for i in range(4):  # Loop over each digit in the most recent guess and the correct code
+            # for j in guess:
             digit = self.guess[i]
             if self.code[i] == digit:  # Test to find a correct digit in the correct place
                 correct_pos += 1
-
-                correct_nums.append(digit)
-            elif digit in self.code and digit not in correct_nums:
-                correct_num += 1
-                correct_nums.append(digit)
-
-        # Not in a working state currently
-        # for i in range(4):  # Loop over each digit in the most recent guess and the correct code
-        #     # for j in guess:
-        #     digit = self.guess[i]
-        #     if self.code[i] == digit:  # Test to find a correct digit in the correct place
-        #         correct_pos += 1
-        #         correct_nums.append(i)
-        #
-        #     for j in range(4):  # Loop over each digit in the most recent guess and the correct code
-        #         code_digit = self.code[j]
-        #         if digit == code_digit and j not in correct_nums:
-        #             correct_num += 1
+                correct_nums.append(i)
+        
+        for j in range(4):  # Loop over each digit in the most recent guess and the correct code
+                code_digit = self.code[j]
+                if digit == code_digit and j not in correct_nums:
+                    correct_num += 1
 
         return correct_pos, correct_num
 
@@ -150,7 +140,7 @@ class Game:
         """
         Generates a random, 4-digit code with each value in the range [1,6]
 
-        @
+        @ Yixiong Zhang
         :return: the randomly generated code.
         """
         code = []
@@ -168,7 +158,7 @@ class Game:
         If the user does not have a correct number in their guess, return a random correct number from the answer, and
         its position.
 
-        @
+        @ Yixiong Zhang
         :return: A correct number in the answer, and its position in the answer as ints.
         """
 
