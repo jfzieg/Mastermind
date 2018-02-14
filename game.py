@@ -40,8 +40,8 @@ class Game:
             self.game_mode = self.UI.start_menu()  # Get user input on game mode and max number of guesses.
 
             if self.game_mode == "user_guess":
-                self.code = self.generate_code()
-                # self.code = ['1', '2', '1', '2']  # Test code for bug checking
+                # self.code = self.generate_code()
+                self.code = ['5', '5', '1', '2']  # Test code for bug checking
 
             elif self.game_mode == "computer_guess":
                 self.code = self.UI.user_generates_code().split()
@@ -156,7 +156,7 @@ class Game:
         If the user does not have a correct number in their guess, return a random correct number from the answer, and
         its position.
 
-        @ Yixiong Zhang
+        @ Yujia Zhang
         :return: A correct number in the answer, and its position in the answer as ints.
         """
 
