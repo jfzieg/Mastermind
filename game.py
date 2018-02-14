@@ -51,7 +51,7 @@ class Game:
             rounds_played = 0
             # Get user input on game mode and number of rounds to play.
             self.game_mode, self.num_rounds = self.UI.start_menu()
-
+            result = ""
             while rounds_played < self.num_rounds:
                 if self.game_mode == "user_guess":
                     self.code = self.generate_code()
@@ -59,7 +59,7 @@ class Game:
 
                 elif self.game_mode == "computer_guess":
                     self.code = self.UI.user_generates_code().split()
-                    self.num_guesses = 10  # Allows code solver a greater chance of winning
+                    self.num_guesses = 15  # Allows code solver a greater chance of winning
                     self.create_set()  # Creates set for eliminating non-possible numbers
                     self.guess = self.generate_guess()  # Generate initial guess
 
@@ -72,11 +72,13 @@ class Game:
                     self.computer_points += 1 if result == "lose" else 0  # Add one if user loses
 
                 if self.game_mode == "computer_guess":  # Add points to user's score if computer guesses
-                    self.user_points += guesses
+                    self.user_points += guesses / 2  # reducing for computer's larger num_guesses
                     self.user_points += 1 if result == "lose" else 0  # Add one if computer loses
 
-                self.UI.display_outcome(result, self.game_mode)  # Display the outcome of that round
+                # Display the outcome of that round
+                self.UI.display_outcome(result, self.game_mode, self.code, self.user_points, self.computer_points)
                 self.game_mode = "computer_guess" if self.game_mode == "user_guess" else "user_guess" # Change game_mode
+                self.num_guesses = 8 if self.game_mode == "user_guess" else 14  # reset max guesses
 
                 rounds_played += .5  # Each game played by computer/user is 1/2 a round
             if result != "quit":
@@ -97,7 +99,7 @@ class Game:
         """
         guesses = 0  # the number of guesses the player has made
 
-        while guesses <= self.num_guesses:
+        while guesses < self.num_guesses:
             # User Guesses
             if self.game_mode == "user_guess":
 
@@ -124,6 +126,7 @@ class Game:
             elif self.game_mode == "computer_guess":
 
                 correct_pos, correct_num = self.code_analysis()
+                self.UI.display_guess(self.guess)
                 if correct_pos == len(self.code):
                     return "win", guesses  # end while loop, and take user to end_menu()
                 else:
@@ -229,7 +232,7 @@ class Game:
                 if old_guess[i] in self.guess_set[i]:
                     self.guess_set[i].remove(old_guess[i])
                 elif correct_num == 0:  # If there are no correct numbers at all, then remove all numbers in the guess
-                    for j in range(len(self.guess_set)):  # from guess set.
+                    for j in range(1, len(self.guess_set)):  # from guess set.
                         if old_guess[j] in self.guess_set[j]:
                             self.guess_set[j].remove(old_guess[j])
 
@@ -253,7 +256,7 @@ class Game:
         @joseph zieg
         :return: nothing
         """
-        for i in range(0, 4):
+        for i in range(4):
             self.guess_set.append(["1", "2", "3", "4", "5", "6"])
 
     def save_stats(self, result):
@@ -347,7 +350,7 @@ class UI:
 
         valid_input = False
 
-        while valid_input == False:
+        while not valid_input:
 
             num_rounds = raw_input("Enter the number of rounds you would like to play: ")
 
@@ -377,7 +380,7 @@ class UI:
                             "Or enter 'quit' to quit."
         valid_input = False
 
-        while valid_input == False:
+        while not valid_input:
 
             print(input_instruction)
             instruction = str(raw_input("Your input: "))
@@ -431,7 +434,17 @@ class UI:
         print("\nThe number of the correct positions is {}.".format(num_correct_pos))
         print("The number of the correct numbers is {}.".format(num_correct))
 
-    def display_outcome(self, result, game_mode):
+    def display_guess(self, guess):
+        """
+        displays the computer's guess for the player to see
+
+        @joseph zieg
+        :param guess: The computer's current guess
+        :return: nothing
+        """
+        print "My guess was {0} {1} {2} {3}".format(*guess)
+
+    def display_outcome(self, result, game_mode, code, user_points, computer_points):
         """
         displays the computer's guess for the player to see
 
@@ -442,6 +455,9 @@ class UI:
 
         player = "\nYou" if game_mode == "user_guess" else "\nI"
         print "{} {} this round!".format(player, result)
+        print "The correct code was {} {} {} {}".format(*code)
+        print "\nI have {} points".format(computer_points)
+        print "You have {} points".format(user_points)
 
     def end_menu(self, final_result):
         """
