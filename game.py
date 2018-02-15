@@ -188,7 +188,7 @@ class Game:
         If the user does not have a correct number in their guess, return a random correct number from the answer, and
         its position.
 
-        @
+        @ Yujia Zhang
         :return: A correct number in the answer, and its position in the answer as ints.
         """
 
@@ -318,13 +318,11 @@ class UI:
         game_mode = self.get_first()
         num_rounds = self.get_num_rounds()
 
-        game_start_message = "You choose {} game mode! Game start!".format(game_mode)
-
         return game_mode, num_rounds
 
     def get_first(self):
         """
-        To initiating the game, ask the user for the game mode
+        To initiating the game, ask the user for the user guess or the computer guess first
 
         @ Yujia Zhang
         :return: the game mode (user_guess/computer_guess)
@@ -348,6 +346,12 @@ class UI:
 
 
     def get_num_rounds(self):
+        """
+        ask the user for the number of rounds
+
+        @ Yujia Zhang
+        :return: the number of rounds
+        """
 
         valid_input = False
 
