@@ -227,7 +227,7 @@ class Game:
         """
         old_guess = self.guess
 
-        print self.guess_set
+        #print self.guess_set
         if correct_pos == 0:
             for i in range(len(old_guess)):
                 if old_guess[i] in self.guess_set[i]:
